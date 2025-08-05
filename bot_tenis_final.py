@@ -123,29 +123,29 @@ def analizar_partidos():
                     ganancia_neta = round(apuesta_A * mejor - STAKE_TOTAL, 2)
 
                     mensaje = (
-                        f"🟢 <b>Oportunidad de Arbitraje (Tenis)</b>
+                        f"🟢 <b>Oportunidad de Arbitraje (Tenis)</b>\n"
 "
-                        f"📌 <b>Evento:</b> {equipos}
+                        f"📌 <b>Evento:</b> {equipos}\n"
 "
-                        f"📅 <b>Fecha y hora:</b> {hora_local.strftime('%Y-%m-%d %I:%M %p')}
+                        f"📅 <b>Fecha y hora:</b> {hora_local.strftime('%Y-%m-%d %I:%M %p')}\n"
 "
-                        f"🎯 <b>Mercado:</b> {tipo_mercado} - {nombre}
+                        f"🎯 <b>Mercado:</b> {tipo_mercado} - {nombre}\n"
 "
-                        f"🏆 <b>Cuota más ALTA ({nombre}):</b> {casa_mejor} | {mejor} ({decimal_to_american(mejor)})
+                        f"🏆 <b>Cuota más ALTA ({nombre}):</b> {casa_mejor} | {mejor} ({decimal_to_american(mejor)})\n"
 "
-                        f"⚠️ <b>Cuota más BAJA del rival ({rival}):</b> {casa_peor_rival} | {peor_rival} ({decimal_to_american(peor_rival)})
+                        f"⚠️ <b>Cuota más BAJA del rival ({rival}):</b> {casa_peor_rival} | {peor_rival} ({decimal_to_american(peor_rival)})\n"
 "
-                        f"📉 <b>Diferencia entre cuotas:</b> {diferencia}%
+                        f"📉 <b>Diferencia entre cuotas:</b> {diferencia}%\n"
 "
-                        f"🧮 <b>Suma de probabilidades:</b> {arbitraje_valor}%
+                        f"🧮 <b>Suma de probabilidades:</b> {arbitraje_valor}%\n"
 "
-                        f"💰 <b>Rentabilidad del arbitraje:</b> {rentabilidad}%
+                        f"💰 <b>Rentabilidad del arbitraje:</b> {rentabilidad}%\n"
 "
-                        f"💵 <b>Inversión sugerida (total ${STAKE_TOTAL}):</b>
+                        f"💵 <b>Inversión sugerida (total ${STAKE_TOTAL}):</b>\n"
 "
-                        f"• Apostar ${apuesta_A} a {nombre} ({mejor})
+                        f"• Apostar ${apuesta_A} a {nombre} ({mejor})\n"
 "
-                        f"• Apostar ${apuesta_B} a {rival} ({peor_rival})
+                        f"• Apostar ${apuesta_B} a {rival} ({peor_rival})\n"
 "
                         f"🏅 <b>Ganancia neta asegurada:</b> ${ganancia_neta}"
                     )
