@@ -1,22 +1,21 @@
+
 import requests
 import os
 import time
 from datetime import datetime
 from pytz import timezone
 
-print("🔥 El bot está corriendo correctamente")
+print("🔁 Bot de Arbitraje (Tenis) ejecutándose...")
 
-# Claves desde Railway (asegúrate de que estén bien nombradas)
 API_KEY = os.getenv("ODDS_API_KEY")
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_API_KEY")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
-# Configuración
 REGION = "us"
 SPORT = "tennis"
-MARKETS = "h2h,spreads,totals"
+MARKETS = "h2h"
+STAKE_TOTAL = 100  # Monto total a invertir en arbitraje
 
-# Lista de casas legales en Indiana
 CASAS_INDIANA = [
     "FanDuel", "DraftKings", "BetMGM", "Caesars", "BetRivers",
     "PointsBet", "ESPN BET", "HardRockBet", "Bet365",
@@ -55,65 +54,70 @@ def enviar_telegram(mensaje):
 
 def analizar_partidos():
     data = get_odds()
-    now = datetime.now(timezone("America/Indiana/Indianapolis"))
     for evento in data:
-        equipos = " vs ".join(evento.get("teams", []))
+        equipos = evento.get("teams", [])
+        if len(equipos) != 2:
+            continue
+
+        jugadorA, jugadorB = equipos
         hora_utc = evento.get("commence_time")
         hora_local = datetime.fromisoformat(hora_utc.replace("Z", "+00:00")).astimezone(timezone("America/Indiana/Indianapolis"))
-        hora_str = hora_local.strftime("%I:%M %p")
 
-        for mercado in evento.get("bookmakers", []):
-            casa = mercado["title"]
-            if casa not in CASAS_INDIANA:
+        mejor_cuota_A = 0
+        mejor_casa_A = ""
+        mejor_cuota_B = 0
+        mejor_casa_B = ""
+
+        for casa in evento.get("bookmakers", []):
+            if casa["title"] not in CASAS_INDIANA:
                 continue
+            for mercado in casa["markets"]:
+                if mercado["key"] != "h2h":
+                    continue
+                for outcome in mercado["outcomes"]:
+                    if outcome["name"] == jugadorA:
+                        if outcome["price"] > mejor_cuota_A:
+                            mejor_cuota_A = outcome["price"]
+                            mejor_casa_A = casa["title"]
+                    elif outcome["name"] == jugadorB:
+                        if outcome["price"] > mejor_cuota_B:
+                            mejor_cuota_B = outcome["price"]
+                            mejor_casa_B = casa["title"]
 
-            for outcome in mercado["markets"]:
-                tipo_mercado = outcome["key"]
-                outcomes = outcome["outcomes"]
-                for o in outcomes:
-                    nombre = o["name"]
-                    cuota = o["price"]
+        if mejor_cuota_A == 0 or mejor_cuota_B == 0:
+            continue
 
-                    mejor = cuota
-                    peor = cuota
-                    casa_mejor = casa
-                    casa_peor = casa
+        arbitraje_valor = round((1 / mejor_cuota_A + 1 / mejor_cuota_B) * 100, 2)
+        rentabilidad = round(100 - arbitraje_valor, 2)
 
-                    for otra_casa in evento.get("bookmakers", []):
-                        if otra_casa["title"] not in CASAS_INDIANA:
-                            continue
-                        for m in otra_casa["markets"]:
-                            if m["key"] != tipo_mercado:
-                                continue
-                            for oc in m["outcomes"]:
-                                if oc["name"] == nombre:
-                                    if oc["price"] > mejor:
-                                        mejor = oc["price"]
-                                        casa_mejor = otra_casa["title"]
-                                    if oc["price"] < peor:
-                                        peor = oc["price"]
-                                        casa_peor = otra_casa["title"]
+        if rentabilidad >= 3:
+            # cálculo de apuestas óptimas
+            inversa_A = 1 / mejor_cuota_A
+            inversa_B = 1 / mejor_cuota_B
+            suma_inversas = inversa_A + inversa_B
 
-                    if mejor == peor:
-                        continue
+            apuesta_A = round((inversa_A / suma_inversas) * STAKE_TOTAL, 2)
+            apuesta_B = round((inversa_B / suma_inversas) * STAKE_TOTAL, 2)
+            ganancia_A = round(apuesta_A * mejor_cuota_A, 2)
+            ganancia_B = round(apuesta_B * mejor_cuota_B, 2)
+            ganancia_neta = round(min(ganancia_A, ganancia_B) - STAKE_TOTAL, 2)
 
-                    diferencia = round((mejor - peor) / peor * 100, 2)
-                    prob_implicita = round(100 / mejor, 2)
-                    prob_real = round((100 / mejor + 100 / peor) / 2, 2)
-
-                    if diferencia >= 15:
-                        mensaje = (
-                            f"🟢 <b>Value Bet Encontrada (Tenis)</b>\n"
-                            f"📌 <b>Evento:</b> {equipos}\n"
-                            f"📅 <b>Hora del Partido:</b> {hora_str}\n"
-                            f"🎯 <b>Mercado:</b> {tipo_mercado} - {nombre}\n"
-                            f"🏆 <b>Casa con cuota MÁS ALTA:</b> {casa_mejor} | {mejor} ({decimal_to_american(mejor)})\n"
-                            f"⚠️ <b>Casa con cuota MÁS BAJA:</b> {casa_peor} | {peor} ({decimal_to_american(peor)})\n"
-                            f"📉 <b>Diferencia:</b> {diferencia}%\n"
-                            f"📊 <b>Probabilidad Implícita:</b> {prob_implicita}%\n"
-                            f"✅ <b>Probabilidad Real:</b> {prob_real}%"
-                        )
-                        enviar_telegram(mensaje)
+            mensaje = (
+                f"🟢 <b>Oportunidad de Arbitraje (Tenis)</b>\n"
+                f"📌 <b>Evento:</b> {jugadorA} vs {jugadorB}\n"
+                f"📅 <b>Fecha y hora:</b> {hora_local.strftime('%Y-%m-%d %I:%M %p')}\n"
+                f"🎯 <b>Mercado:</b> h2h\n"
+                f"🏆 <b>Cuota más ALTA ({jugadorA}):</b> {mejor_casa_A} | {mejor_cuota_A} ({decimal_to_american(mejor_cuota_A)})\n"
+                f"⚠️ <b>Cuota más BAJA del rival ({jugadorB}):</b> {mejor_casa_B} | {mejor_cuota_B} ({decimal_to_american(mejor_cuota_B)})\n"
+                f"📉 <b>Diferencia entre cuotas:</b> {round((mejor_cuota_A - mejor_cuota_B) / mejor_cuota_B * 100, 2)}%\n"
+                f"🧮 <b>Suma de probabilidades:</b> {arbitraje_valor}%\n"
+                f"💰 <b>Rentabilidad del arbitraje:</b> {rentabilidad}%\n"
+                f"💵 <b>Inversión sugerida (total ${STAKE_TOTAL}):</b>\n"
+                f"• Apostar ${apuesta_A} a {jugadorA} ({mejor_cuota_A})\n"
+                f"• Apostar ${apuesta_B} a {jugadorB} ({mejor_cuota_B})\n"
+                f"🏅 <b>Ganancia neta asegurada:</b> ${ganancia_neta}"
+            )
+            enviar_telegram(mensaje)
 
 def main():
     while True:
