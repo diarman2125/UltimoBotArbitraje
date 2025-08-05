@@ -48,7 +48,9 @@ def verificar_arbitraje():
     eventos = respuesta.json()
 
     for evento in eventos:
-        equipos = " vs ".join(evento["teams"])
+        equipos = "No disponible"
+        if "teams" in evento:
+            equipos = " vs ".join(evento["teams"])
         hora_utc = datetime.strptime(evento["commence_time"], "%Y-%m-%dT%H:%M:%SZ")
         hora_local = hora_utc.replace(tzinfo=pytz.utc).astimezone(zona_horaria_local)
 
