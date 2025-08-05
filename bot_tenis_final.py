@@ -103,14 +103,14 @@ def analizar_partidos():
 
                     if diferencia >= 15:
                         mensaje = (
-                            f"🟢 <b>Value Bet Encontrada (Tenis)</b>"
-                            f"📌 <b>Evento:</b> {equipos}"
-                            f"📅 <b>Hora del Partido:</b> {hora_str}"
-                            f"🎯 <b>Mercado:</b> {tipo_mercado} - {nombre}"
-                            f"🏆 <b>Casa con cuota MÁS ALTA:</b> {casa_mejor} | {mejor} ({decimal_to_american(mejor)})"
-                            f"⚠️ <b>Casa con cuota MÁS BAJA:</b> {casa_peor} | {peor} ({decimal_to_american(peor)})"
-                            f"📉 <b>Diferencia:</b> {diferencia}%"
-                            f"📊 <b>Probabilidad Implícita:</b> {prob_implicita}%"
+                            f"🟢 <b>Value Bet Encontrada (Tenis)</b>\n"
+                            f"📌 <b>Evento:</b> {equipos}\n"
+                            f"📅 <b>Hora del Partido:</b> {hora_str}\n"
+                            f"🎯 <b>Mercado:</b> {tipo_mercado} - {nombre}\n"
+                            f"🏆 <b>Casa con cuota MÁS ALTA:</b> {casa_mejor} | {mejor} ({decimal_to_american(mejor)})\n"
+                            f"⚠️ <b>Casa con cuota MÁS BAJA:</b> {casa_peor} | {peor} ({decimal_to_american(peor)})\n"
+                            f"📉 <b>Diferencia:</b> {diferencia}%\n"
+                            f"📊 <b>Probabilidad Implícita:</b> {prob_implicita}%\n"
                             f"✅ <b>Probabilidad Real:</b> {prob_real}%"
                         )
                         enviar_telegram(mensaje)
