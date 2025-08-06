@@ -15,7 +15,7 @@ REGION = "us"
 SPORT = "tennis"
 MARKETS = "h2h"
 STAKE_TOTAL = 100  # Monto total a invertir en arbitraje
-RENTABILIDAD_MINIMA = 3.0  # % mínimo para enviar alerta
+RENTABILIDAD_MINIMA = 1.0  # % mínimo para enviar alerta
 
 CASAS_INDIANA = [
     "FanDuel", "DraftKings", "BetMGM", "Caesars", "BetRivers",
